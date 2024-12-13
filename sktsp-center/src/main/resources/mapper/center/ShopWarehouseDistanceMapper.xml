@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.center.mapper.ShopWarehouseDistanceMapper">
+
+    <resultMap type="ShopWarehouseDistance" id="ShopWarehouseDistanceResult">
+        <result property="id"    column="id"    />
+        <result property="shopId"    column="shop_id"    />
+        <result property="warehouseId"    column="warehouse_id"    />
+        <result property="distance"    column="distance"    />
+    </resultMap>
+
+    <sql id="selectShopWarehouseDistanceVo">
+        select id, shop_id, warehouse_id, distance from shop_warehouse_distance
+    </sql>
+
+    <select id="selectShopWarehouseDistanceList" parameterType="ShopWarehouseDistance" resultType="com.ruoyi.center.domain.ShopWarehouseDistance">
+      <!--/////关联sys_dept表进行数据仓库，且仓库条件改成仓库名称和商店名称模糊查询/////-->
+        select a.id, a.shop_id shopId, a.warehouse_id warehouseId, a.distance,b.dept_name shopname,c.dept_name warehousename  from shop_warehouse_distance a
+        left join (select dept_id,dept_name from sys_dept where dept_code like 'M%') b on b.dept_id = a.shop_id
+        left join (select dept_id,dept_name from sys_dept where dept_code like 'S%') c on c.dept_id = a.warehouse_id
+        <where>
+            <if test="shopname != null "> and b.dept_name like CONCAT('%', #{shopname}, '%')</if>
+            <if test="warehousename != null "> and c.dept_name like CONCAT('%', #{warehousename}, '%')</if>
+            <if test="distance != null ">and a.distance like  CONCAT('%', #{distance}, '%')  </if>
+        </where>
+    </select>
+
+    <select id="selectShopWarehouseDistanceById" parameterType="Long" resultMap="ShopWarehouseDistanceResult">
+        <include refid="selectShopWarehouseDistanceVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="ck" resultType="com.ruoyi.center.domain.opins">
+   select dept_id value,dept_name label from sys_dept where dept_code like 'S%'
+    </select>
+
+    <select id="sd" resultType="com.ruoyi.center.domain.opins">
+      select dept_id value,dept_name label from sys_dept where dept_code like 'M%'
+    </select>
+
+    <insert id="insertShopWarehouseDistance" parameterType="ShopWarehouseDistance">
+        insert into shop_warehouse_distance
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="shopId != null">shop_id,</if>
+            <if test="warehouseId != null">warehouse_id,</if>
+            <if test="distance != null">distance,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="shopId != null">#{shopId},</if>
+            <if test="warehouseId != null">#{warehouseId},</if>
+            <if test="distance != null">#{distance},</if>
+         </trim>
+    </insert>
+
+    <update id="updateShopWarehouseDistance" parameterType="ShopWarehouseDistance">
+        update shop_warehouse_distance
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="shopId != null">shop_id = #{shopId},</if>
+            <if test="warehouseId != null">warehouse_id = #{warehouseId},</if>
+            <if test="distance != null">distance = #{distance},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteShopWarehouseDistanceById" parameterType="Long">
+        delete from shop_warehouse_distance where id = #{id}
+    </delete>
+
+    <delete id="deleteShopWarehouseDistanceByIds" parameterType="String">
+        delete from shop_warehouse_distance where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.stock.mapper.WarehouseInventoryMapper">
+
+    <resultMap type="WarehouseInventory" id="WarehouseInventoryResult">
+        <result property="id" column="id"/>
+        <result property="warehouseId" column="warehouse_id"/>
+        <result property="goodsId" column="goods_id"/>
+        <result property="sum" column="sum"/>
+        <result property="warehouseName" column="dept_name"/>
+        <result property="goodsName" column="name"/>
+    </resultMap>
+
+    <sql id="selectWarehouseInventoryVo">
+        select w.id, w.warehouse_id, w.goods_id, s.dept_name, g.name, w.sum
+        from warehouse_inventory w
+                 join goods g on g.id = w.goods_id
+                 join sys_dept s on s.dept_id = w.warehouse_id
+    </sql>
+
+    <select id="selectWarehouseInventoryList" parameterType="WarehouseInventory" resultMap="WarehouseInventoryResult">
+        <include refid="selectWarehouseInventoryVo"/>
+        <where>
+            <if test="warehouseId != null"> and w.warehouse_id = #{warehouseId}</if>
+            <if test="goodsId != null"> and w.goods_id = #{goodsId}</if>
+            <if test="warehouseName != null"> and s.dept_name = #{warehouseName}</if>
+            <if test="goodsName != null"> and g.name = #{goodsName}</if>
+            <if test="sum != null"> and w.sum = #{sum}</if>
+        </where>
+    </select>
+
+    <select id="selectWarehouseInventoryById" parameterType="Long" resultMap="WarehouseInventoryResult">
+        <include refid="selectWarehouseInventoryVo"/>
+        where w.id = #{id}
+    </select>
+
+    <insert id="insertWarehouseInventory" parameterType="WarehouseInventory">
+        insert into warehouse_inventory (warehouse_id, goods_id, sum) values (#{warehouseId}, #{goodsId}, #{sum})
+    </insert>
+
+    <update id="updateWarehouseInventory" parameterType="WarehouseInventory">
+        update warehouse_inventory
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="warehouseId != null">warehouse_id = #{warehouseId},</if>
+            <if test="goodsId != null">goods_id = #{goodsId},</if>
+            <if test="sum != null">sum = #{sum},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteWarehouseInventoryById" parameterType="Long">
+        delete from warehouse_inventory where id = #{id}
+    </delete>
+
+    <delete id="deleteWarehouseInventoryByIds" parameterType="String">
+        delete from warehouse_inventory where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

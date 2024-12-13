@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.distribute.mapper.DistributeresultMapper">
+    
+    <resultMap type="Distributeresult" id="DistributeresultResult">
+        <id property="id" column="id"/>
+        <result property="shopId"    column="shop_id"    />
+        <result property="warehouseId"    column="warehouse_id"    />
+        <result property="name"         column="name" />
+        <result property="goodId"    column="good_id"    />
+        <result property="count"    column="count"    />
+    </resultMap>
+
+    <sql id="selectDistributeresultVo">
+        SELECT
+            dis.id,
+            dis.shop_id,
+            dpt.dept_name AS shopName,
+            dis.warehouse_id,
+            dpt1.dept_name AS warehouseName,
+            gd.name AS name,
+            dis.good_id,
+            dis.count,
+            dis.time
+        FROM
+            distributeresult dis
+                INNER JOIN
+            goods gd ON gd.id = dis.good_id
+                INNER JOIN
+            sys_dept dpt ON dpt.dept_id = dis.shop_id
+                INNER JOIN
+            sys_dept dpt1 ON dpt1.dept_id = dis.warehouse_id
+        ORDER BY dis.id
+    </sql>
+
+    <select id="selectDistributeresultList" parameterType="Distributeresult" resultMap="DistributeresultResult">
+        SELECT
+        dis.id,
+        dis.shop_id,
+        dpt.dept_name AS shopName,
+        dis.warehouse_id,
+        dpt1.dept_name AS warehouseName,
+        gd.name AS name,
+        dis.good_id,
+        dis.count,
+        dis.time
+        FROM
+        distributeresult dis
+        INNER JOIN
+        goods gd ON gd.id = dis.good_id
+        INNER JOIN
+        sys_dept dpt ON dpt.dept_id = dis.shop_id
+        INNER JOIN
+        sys_dept dpt1 ON dpt1.dept_id = dis.warehouse_id
+        <where>
+            <if test="shopId != null"> AND dis.shop_id = #{shopId}</if>
+            <if test="shopName != null"> AND dpt.dept_name LIKE CONCAT('%', #{shopName}, '%')</if>
+            <if test="warehouseId != null"> AND dis.warehouse_id = #{warehouseId}</if>
+            <if test="warehouseName != null"> AND dpt1.dept_name LIKE CONCAT('%', #{warehouseName}, '%')</if>
+            <if test="goodId != null"> AND dis.good_id = #{goodId}</if>
+            <if test="name != null"> AND gd.name LIKE CONCAT('%', #{name}, '%')</if>
+            <if test="count != null"> AND dis.count = #{count}</if>
+        </where>
+        ORDER BY dis.id
+
+    </select>
+
+
+
+    <select id="selectDistributeresultById" parameterType="Long" resultMap="DistributeresultResult">
+        <include refid="selectDistributeresultVo"/>
+        where dis.id = #{id}
+    </select>
+        
+    <insert id="insertDistributeresult" parameterType="Distributeresult">
+        insert into distributeresult
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="shopId != null">shop_id,</if>
+            <if test="warehouseId != null">warehouse_id,</if>
+            <if test="goodId != null">good_id,</if>
+            <if test="count != null">count,</if>
+            <if test="time != null">time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="shopId != null">#{shopId},</if>
+            <if test="warehouseId != null">#{warehouseId},</if>
+            <if test="goodId != null">#{goodId},</if>
+            <if test="count != null">#{count},</if>
+            <if test="time != null">#{time},</if>
+         </trim>
+    </insert>
+
+    <update id="updateDistributeresult" parameterType="Distributeresult">
+        update distributeresult
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="shopId != null">shop_id = #{shopId},</if>
+            <if test="warehouseId != null">warehouse_id = #{warehouseId},</if>
+            <if test="goodId != null">good_id = #{goodId},</if>
+            <if test="count != null">count = #{count},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDistributeresultById" parameterType="Long">
+        delete from distributeresult where id = #{id}
+    </delete>
+
+    <delete id="deleteDistributeresultByIds" parameterType="String">
+        delete from distributeresult where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getApSummary" resultType="Map">
+        SELECT
+            dpt.dept_name as shop_name,
+            ap.shop_id,
+            ap.good_id,
+            gd.name as name,
+            SUM(ap.count) AS total_count
+        FROM application ap
+                 INNER JOIN goods gd ON gd.id = ap.good_id
+                 INNER JOIN sys_dept dpt ON dpt.dept_id = ap.shop_id
+        WHERE
+            ap.is_processed = 0
+        GROUP BY
+            ap.shop_id, ap.good_id
+        ORDER BY
+            ap.good_id
+    </select>
+
+    <select id="getInvSummary" resultType="Map">
+        SELECT
+            dpt.dept_name as warehouse_name,
+            wi.warehouse_id,
+            wi.goods_id AS good_id,
+            gd.name as name,
+            SUM(wi.sum) AS total_count
+        FROM warehouse_inventory wi
+                 INNER JOIN goods gd ON gd.id = wi.goods_id
+                 INNER JOIN sys_dept dpt ON dpt.dept_id = wi.warehouse_id
+        GROUP BY
+            wi.warehouse_id, wi.goods_id
+        ORDER BY
+            wi.goods_id
+    </select>
+
+    <select id="getInvIDSummary" resultType="Map">
+        SELECT
+            goods_id AS good_id,
+            SUM(sum) AS total_count
+        FROM warehouse_inventory
+        GROUP BY
+            goods_id
+    </select>
+
+    <select id="getIDSummary" resultType="Map">
+        SELECT
+            good_id,
+            SUM(count) AS total_count
+        FROM application
+        WHERE
+            is_processed = 0
+        GROUP BY
+            good_id
+    </select>
+
+    <select id="getSingleGoodInv" resultType="Map">
+        SELECT
+            wi.warehouse_id,
+            dpt.dept_name as warehouse_name,
+            wi.sum
+        FROM warehouse_inventory wi
+                 INNER JOIN sys_dept dpt ON dpt.dept_id = wi.warehouse_id
+        WHERE
+            wi.goods_id = #{good_id} and sum > 0
+        ORDER BY
+            wi.warehouse_id
+    </select>
+
+    <select id="getAllDistances" resultType="Map">
+        SELECT
+            shop_id,
+            warehouse_id,
+            distance
+        FROM
+            shop_warehouse_distance
+    </select>
+</mapper>

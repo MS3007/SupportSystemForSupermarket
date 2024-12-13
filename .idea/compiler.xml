@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="ruoyi-framework" />
+        <module name="ruoyi-system" />
+        <module name="sktsp-stock" />
+        <module name="ruoyi-common" />
+        <module name="ruoyi-generator" />
+        <module name="sktsp-distribute" />
+        <module name="ruoyi-quartz" />
+        <module name="sktsp-center" />
+        <module name="ruoyi-admin" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="sktsp-goods" target="1.8" />
+      <module name="sktsp_sys-goods" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.stock.mapper.ShopStockMapper">
+
+    <resultMap type="ShopStock" id="ShopStockResult">
+        <result property="id" column="id" />
+        <result property="shopId" column="shop_id" />
+        <result property="goodsId" column="goods_id" />
+        <result property="sum" column="sum" />
+        <result property="shopName" column="dept_name" />
+        <result property="goodsName" column="name" />
+    </resultMap>
+
+    <sql id="selectShopStockVo">
+        select ss.id, s.dept_name, g.name, ss.sum from shop_stock ss join goods g on g.id=ss.goods_id join sys_dept s on s.dept_id=ss.shop_id
+    </sql>
+
+    <select id="selectShopStockList" parameterType="ShopStock" resultMap="ShopStockResult">
+        <include refid="selectShopStockVo"/>
+        <where>
+            <if test="shopId != null"> and ss.shop_id = #{shopId}</if>
+            <if test="goodsId != null"> and ss.goods_id = #{goodsId}</if>
+            <if test="shopName != null "> and s.dept_name = #{shopName}</if>
+            <if test="goodsName != null "> and g.name = #{goodsName}</if>
+            <if test="sum != null "> and ss.sum = #{sum}</if>
+        </where>
+    </select>
+
+    <select id="selectShopStockById" parameterType="Long" resultMap="ShopStockResult">
+        <include refid="selectShopStockVo"/>
+        where ss.id = #{id}
+    </select>
+
+    <insert id="insertShopStock" parameterType="ShopStock">
+        insert into shop_stock (shop_id, goods_id, sum) values (#{shopId}, #{goodsId}, #{sum})
+    </insert>
+
+    <update id="updateShopStock" parameterType="ShopStock">
+        update shop_stock
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="shopId != null">shop_id = #{shopId},</if>
+            <if test="goodsId != null">goods_id = #{goodsId},</if>
+            <if test="sum != null">sum = #{sum},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteShopStockById" parameterType="Long">
+        delete from shop_stock where id = #{id}
+    </delete>
+
+    <delete id="deleteShopStockByIds" parameterType="String">
+        delete from shop_stock where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

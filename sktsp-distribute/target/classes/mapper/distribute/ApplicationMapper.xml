@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.distribute.mapper.ApplicationMapper">
+
+    <resultMap id="ApplicationResult" type="Application">
+        <id property="id" column="id"/>
+        <result property="date" column="date"/>
+        <result property="shopId" column="shop_id"/>
+        <result property="name" column="name"/>
+        <result property="goodId" column="good_id"/>
+        <result property="count" column="count"/>
+        <result property="isProcessed" column="is_processed"/>
+    </resultMap>
+
+
+    <sql id="selectApplicationVo">
+        SELECT ap.id, ap.date, ap.shop_id, gd.name AS name, ap.good_id, ap.count, ap.is_processed
+        FROM application ap
+                 INNER JOIN goods gd ON gd.id = ap.good_id
+    </sql>
+
+    <select id="selectApplicationList" parameterType="Application" resultMap="ApplicationResult">
+        <include refid="selectApplicationVo"/>
+        <where>  
+            <if test="date != null "> and date = #{date}</if>
+            <if test="shopId != null "> and shop_id = #{shopId}</if>
+            <if test="goodId != null "> and good_id = #{goodId}</if>
+            <if test="count != null "> and count = #{count}</if>
+            <if test="isProcessed != null "> and is_processed = #{isProcessed}</if>
+        </where>
+    </select>
+    
+    <select id="selectApplicationById" parameterType="Long" resultMap="ApplicationResult">
+        <include refid="selectApplicationVo"/>
+        where ap.id = #{id}
+    </select>
+        
+    <insert id="insertApplication" parameterType="Application">
+        insert into application
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="date != null">date,</if>
+            <if test="shopId != null">shop_id,</if>
+            <if test="goodId != null">good_id,</if>
+            <if test="count != null">count,</if>
+            <if test="isProcessed != null">is_processed,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="date != null">#{date},</if>
+            <if test="shopId != null">#{shopId},</if>
+            <if test="goodId != null">#{goodId},</if>
+            <if test="count != null">#{count},</if>
+            <if test="isProcessed != null">#{isProcessed},</if>
+         </trim>
+    </insert>
+
+    <update id="updateApplication" parameterType="Application">
+        update application
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="date != null">date = #{date},</if>
+            <if test="shopId != null">shop_id = #{shopId},</if>
+            <if test="goodId != null">good_id = #{goodId},</if>
+            <if test="count != null">count = #{count},</if>
+            <if test="isProcessed != null">is_processed = #{isProcessed},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteApplicationById" parameterType="Long">
+        delete from application where id = #{id}
+    </delete>
+
+    <delete id="deleteApplicationByIds" parameterType="String">
+        delete from application where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <update id="updateAllIsProcessedToOne">
+        UPDATE application SET is_processed = 1
+    </update>
+
+
+
+
+
+</mapper>
